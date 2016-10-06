@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+
+int main(int argc, char * argv []) {
+	
+	if(argc != 3){// parametros que paso: el nombre del programa, y los dos enteros, tres elementos en el array
+		fprintf(stdout,"Número de parámetros incorrectos. ");
+		exit (-1);
+	}
+	
+
+	pid_t  pidPadre, pidHijo, pidNieto, fin1, fin2;
+	
+	int num1 = atoi(argv[1]);
+	int num2 = atoi(argv[2]);
+
+	pidPadre = getpid();// un pid tomara este valor
+	
+	pidHijo = fork();//division al hijo y tomara el segundo valor pid
+
+	if (pidHijo == -1)
+	{
+
+		fprintf(stdout, "\nHa habido un error \n" );
+		exit(-1);
+	}
+
+	if (pidHijo == 0)
+	{
+
+		fprintf(stdout, "\nSoy el proceso hijo con PID %d:\n",getpid() );
+
+		fprintf (stdout,"Soy el proceso padre %d en el hijo %d  \n", pidPadre,getpid());
+
+		fprintf(stdout,"El resultado de sumar %d y %d es %d  \n", num1, num2,(num1+num2));
+
+		// ahora dentro del proceso hijo hago fork  al proceso hijo y nace otro proceso nieto
+		
+		pidHijo = getpid();//esto es lo que vale el proceso hijo en el proceso nieto?
+
+		pidNieto = fork();
+
+		if (pidNieto == -1)
+		{
+
+			fprintf(stdout, "\nHa habido un error. \n" );
+			exit(-1);
+		}
+		if (pidNieto == 0)
+		{
+
+			fprintf(stdout,"Soy el proceso nieto recien nacido PID %d \n", getpid());
+
+			fprintf(stdout,"Soy el proceso hijo %d en el nieto PID %d \n",pidHijo , getpid());
+			fprintf(stdout,"El resultado de restar %d y %d es %d  \n", num1, num2,(num1-num2));
+		}
+		else 
+		{
+			fprintf(stdout,"El resultado de multiplicar %d y %d es %d  \n", num1, num2,(num1*num2));	
+			fprintf(stdout,"Soy el padre, voy a esperar a un hijo\n");
+						
+			fin1= wait(NULL);
+			fprintf(stdout,"El proceso hijo PID %d ha terminado  \n", fin1);
+				
+			fin2= wait(NULL);
+			fprintf(stdout,"El proceso hijo  PID %d ha terminado  \n", fin2);
+			
+		}
+
+	}
+
+
+}
